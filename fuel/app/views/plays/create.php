@@ -1,66 +1,75 @@
+<?php
+$rank_options = array('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
+$suit_options = array(
+    '♠' => 'spade',
+    '♥' => 'heart',
+    '♦' => 'diamond',
+    '♣' => 'club'
+);
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>プレイ記録</title>
+    <title>新規プレイ追加</title>
 </head>
 <body>
-    <h1>プレイ記録フォーム</h1>
-    <form action="/plays/store" method="post">
-        <label>ポジション: <input type="text" name="position"></label><br>
-        <label>SB: <input type="number" name="sb"></label><br>
-        <label>BB: <input type="number" name="bb"></label><br>
+    <h1>新規プレイ追加</h1>
+    <form action="<?= Uri::create('plays/create') ?>" method="post">
+    <label>ポジション:
+        <select name="position">
+            <option value="UTG">UTG</option>
+            <option value="MP">MP</option>
+            <option value="CO">CO</option>
+            <option value="BTN">BTN</option>
+            <option value="SB">SB</option>
+            <option value="BB">BB</option>
+        </select>
+    </label>
+    <br>
+    <label>SB: <input type="number" name="sb" value="10"></label>
+    <label>BB: <input type="number" name="bb" value="20"></label>
+    <label>アンティ: <input type="number" name="ante" value="20"></label>
+    <label>メモ: <input type="text" name="memo"></label>
+    <br><br>
 
-        <h3>ハンド選択</h3>
-        <label>1枚目:
-            <select name="hand1_rank">
-                <?php foreach (["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"] as $rank): ?>
+    <h3>ハンド選択</h3>
+    <?php for ($i = 1; $i <= 2; $i++): ?>
+        <label><?= $i ?>枚目:
+            <select name="hand<?= $i ?>_rank">
+                <?php foreach ($rank_options as $rank): ?>
                     <option value="<?= $rank ?>"><?= $rank ?></option>
                 <?php endforeach; ?>
             </select>
-            <select name="hand1_suit">
-                <?php foreach (["♠", "♥", "♦", "♣"] as $suit): ?>
+            <select name="hand<?= $i ?>_suit">
+                <?php foreach ($suit_options as $suit): ?>
                     <option value="<?= $suit ?>"><?= $suit ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
         <br>
-        <label>2枚目:
-            <select name="hand2_rank">
-                <?php foreach (["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"] as $rank): ?>
+    <?php endfor; ?>
+
+    <h3>ボード選択</h3>
+    <?php $board_types = ['flop1', 'flop2', 'flop3', 'turn', 'river']; ?>
+    <?php foreach ($board_types as $board): ?>
+        <label><?= ucfirst($board) ?>:
+            <select name="<?= $board ?>_rank">
+                <?php foreach ($rank_options as $rank): ?>
                     <option value="<?= $rank ?>"><?= $rank ?></option>
                 <?php endforeach; ?>
             </select>
-            <select name="hand2_suit">
-                <?php foreach (["♠", "♥", "♦", "♣"] as $suit): ?>
+            <select name="<?= $board ?>_suit">
+                <?php foreach ($suit_options as $suit): ?>
                     <option value="<?= $suit ?>"><?= $suit ?></option>
                 <?php endforeach; ?>
             </select>
         </label>
         <br>
+    <?php endforeach; ?>
 
-        <h3>ボード選択</h3>
-        <?php for ($i = 1; $i <= 5; $i++): ?>
-            <label><?= ($i <= 3) ? "フロップ" : (($i == 4) ? "ターン" : "リバー") ?>:
-                <select name="board<?= $i ?>_rank">
-                    <option value="">-</option>
-                    <?php foreach (["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"] as $rank): ?>
-                        <option value="<?= $rank ?>"><?= $rank ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <select name="board<?= $i ?>_suit">
-                    <option value="">-</option>
-                    <?php foreach (["♠", "♥", "♦", "♣"] as $suit): ?>
-                        <option value="<?= $suit ?>"><?= $suit ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-            <br>
-        <?php endfor; ?>
-
-        <label>メモ: <input type="text" name="memo"></label><br>
-        <input type="submit" value="記録する">
-    </form>
+    <input type="submit" value="プレイを作成">
+</form>
     <a href="/plays/index">戻る</a>
 </body>
 </html>

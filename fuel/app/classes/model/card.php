@@ -1,6 +1,8 @@
 <?php
 
-class Model_Card extends Orm\Model
+use Orm\Model;
+
+class Model_Card extends Model
 {
     protected static $_properties = [
         'id',
@@ -8,15 +10,23 @@ class Model_Card extends Orm\Model
         'type',
         'card_rank',
         'suit',
+        'created_at',
     ];
-
-    protected static $_table_name = 'cards';
 
     protected static $_belongs_to = [
         'play' => [
             'model_to' => 'Model_Play',
             'key_from' => 'play_id',
-            'key_to' => 'id',
-        ],
+            'key_to'   => 'id',
+        ]
     ];
+
+    protected static $_observers = [
+        'Orm\Observer_CreatedAt' => [
+            'events' => ['before_insert'],
+            'mysql_timestamp' => true,
+        ],
+    ];    
+
+    protected static $_table_name = 'cards';
 }

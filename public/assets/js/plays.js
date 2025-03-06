@@ -33,13 +33,22 @@ document.addEventListener("DOMContentLoaded", function () {
             fetch('/plays/api')
             .then(response => response.json())
             .then(data => {
-                console.log("取得データ:", data); // データをコンソールに出力して確認
-                data.forEach(play => {
-                    if (!play.position) {
-                        play.position = "UTG";  // `position` が null の場合の対処
-                    }
-                });
-                self.plays(data);  
+                console.log("取得データ:", data); // デバッグ用
+                if (!Array.isArray(data)) {
+                    console.error("取得データが配列ではありません:", data);
+                    return;
+                }                
+        
+                // Knockout.js に正しくデータをセット
+                self.plays(data.map(play => ({
+                    id: ko.observable(play.id),
+                    position: ko.observable(play.position || "UTG"), // デフォルト値を設定
+                    sb: ko.observable(play.sb || 0),
+                    bb: ko.observable(play.bb || 0),
+                    ante: ko.observable(play.ante || 0),
+                    memo: ko.observable(play.memo || ""),
+                    cards: ko.observableArray(play.cards ? Object.values(play.cards) : []) // カードがない場合は空配列
+                })));
             })
             .catch(error => console.error('Error:', error));
         };

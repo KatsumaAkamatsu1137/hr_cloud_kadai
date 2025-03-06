@@ -2,133 +2,460 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プレイ履歴</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-min.js"></script>
+    <title>プレイ履歴一覧</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js"></script>
+    <script src="/assets/js/plays.js"></script>
 </head>
 <body>
-
-<h3>プレイ履歴</h3>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>ポジション</th>
-        <th>スモールブラインド</th>
-        <th>ビッグブラインド</th>
-        <th>ハンド</th>
-        <th>ボード</th>
-        <th>メモ</th>
-        <th>編集</th>
-    </tr>
-    <tbody data-bind="foreach: plays">
+    <h1>プレイ履歴一覧</h1>
+    <button onclick="openCreateModal()">新規プレイ追加</button>
+    <table border="1">
         <tr>
-            <td data-bind="text: id"></td>
-            <td><input type="text" data-bind="value: position"></td>
-            <td><input type="number" data-bind="value: sb"></td>
-            <td><input type="number" data-bind="value: bb"></td>
-
-            <!-- ハンド (手札) -->
-            <td>
-                <select data-bind="value: hand1.rank">
-                    <option value="A">A</option>
-                    <option value="K">K</option>
-                    <option value="Q">Q</option>
-                    <option value="J">J</option>
-                    <option value="10">10</option>
-                    <option value="9">9</option>
-                    <option value="8">8</option>
-                    <option value="7">7</option>
-                    <option value="6">6</option>
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                </select>
-                <select data-bind="value: hand1.suit">
-                    <option value="spade">♠</option>
-                    <option value="heart">♥</option>
-                    <option value="diamond">♦</option>
-                    <option value="club">♣</option>
-                </select>
-
-                <select data-bind="value: hand2.rank">
-                    <option value="A">A</option>
-                    <option value="K">K</option>
-                    <option value="Q">Q</option>
-                    <option value="J">J</option>
-                    <option value="10">10</option>
-                    <option value="9">9</option>
-                    <option value="8">8</option>
-                    <option value="7">7</option>
-                    <option value="6">6</option>
-                    <option value="5">5</option>
-                    <option value="4">4</option>
-                    <option value="3">3</option>
-                    <option value="2">2</option>
-                </select>
-                <select data-bind="value: hand2.suit">
-                    <option value="spade">♠</option>
-                    <option value="heart">♥</option>
-                    <option value="diamond">♦</option>
-                    <option value="club">♣</option>
-                </select>
-            </td>
-
-            <!-- ボード (フロップ, ターン, リバー) -->
-            <td>
-                フロップ:
-                <input type="text" data-bind="value: flop" placeholder="例: 10♠ J♥ K♦"><br>
-                ターン:
-                <input type="text" data-bind="value: turn" placeholder="例: Q♣"><br>
-                リバー:
-                <input type="text" data-bind="value: river" placeholder="例: A♥">
-            </td>
-
-            <td><input type="text" data-bind="value: memo"></td>
-            <td><button data-bind="click: $parent.savePlay">保存</button></td>
+            <th>ID</th>
+            <th>ポジション</th>
+            <th>SB</th>
+            <th>BB</th>
+            <th>ハンド</th>
+            <th>ボード</th>
+            <th>アクション</th>
         </tr>
-    </tbody>
-</table>
+        <tbody data-bind="foreach: plays">
+            <tr>
+                <td data-bind="text: id"></td>
+                <td data-bind="text: position"></td>
+                <td data-bind="text: sb"></td>
+                <td data-bind="text: bb"></td>
+                <td>
+                    <span data-bind="foreach: cards">
+                        <!-- ハンドのカードのみ表示 -->
+                        <!-- ko if: type === 'hand' -->
+                        <span data-bind="text: card_rank"></span><span data-bind="text: suit"></span>
+                        <!-- /ko -->
+                    </span>
+                </td>
+                <td>
+                    <span data-bind="foreach: cards">
+                        <!-- フロップ、ターン、リバーのカードのみ表示 -->
+                        <!-- ko if: type !== 'hand' -->
+                        <span data-bind="text: card_rank"></span><span data-bind="text: suit"></span>
+                        <!-- /ko -->
+                    </span>
+                </td>
+                <td>
+                    <a data-bind="attr: { href: '/plays/view/' + id }">詳細</a> |
+                    <a href="#" data-bind="click: $parent.openEditModal">編集</a> |
+                    <button data-bind="click: $parent.deletePlay">削除</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-<script>
-function Play(id, position, sb, bb, hand1, hand2, flop, turn, river, memo) {
-    this.id = ko.observable(id);
-    this.position = ko.observable(position);
-    this.sb = ko.observable(sb);
-    this.bb = ko.observable(bb);
-    this.memo = ko.observable(memo);
+    <!-- 新規プレイ作成モーダル -->
+    <div id="createModal" style="display:none;">
+        <h2>新規プレイ作成</h2>
+        <form data-bind="submit: createPlay">
+            <label>ポジション:
+                <select data-bind="value: newPlay().position">
+                    <option value="UTG">UTG</option>
+                    <option value="MP">MP</option>
+                    <option value="CO">CO</option>
+                    <option value="BTN">BTN</option>
+                    <option value="SB">SB</option>
+                    <option value="BB">BB</option>
+                </select>
+            </label>
+            <br>
+            <label>SB: <input type="number" data-bind="value: newPlay().sb" /></label>
+            <label>BB: <input type="number" data-bind="value: newPlay().bb" /></label>
+            <label>アンティ: <input type="number" data-bind="value: newPlay().ante" /></label>
+            <label>メモ: <input type="text" data-bind="value: newPlay().memo" /></label>
+            <br><br>
 
-    // ハンド (手札)
-    this.hand1 = {
-        rank: ko.observable(hand1.rank),
-        suit: ko.observable(hand1.suit)
-    };
-    this.hand2 = {
-        rank: ko.observable(hand2.rank),
-        suit: ko.observable(hand2.suit)
-    };
+            <h3>ハンド選択</h3>
 
-    // ボード (フロップ・ターン・リバー)
-    this.flop = ko.observable(flop);
-    this.turn = ko.observable(turn);
-    this.river = ko.observable(river);
-}
+            <!-- ハンド1 -->
+            <label>1枚目:
+                <select data-bind="value: newPlay().hand1_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().hand1_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
 
-function ViewModel() {
-    var self = this;
-    self.plays = ko.observableArray([
-        new Play(1, "UTG", 50, 100, {rank: "A", suit: "spade"}, {rank: "K", suit: "heart"}, "10♠ J♥ K♦", "Q♣", "A♥", "試しのプレイ"),
-        new Play(2, "BTN", 50, 100, {rank: "9", suit: "club"}, {rank: "9", suit: "diamond"}, "7♣ 8♠ 9♦", "10♠", "J♠", "BTNからのオールイン")
-    ]);
+            <!-- ハンド2 -->
+            <label>2枚目:
+                <select data-bind="value: newPlay().hand2_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().hand2_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
 
-    self.savePlay = function(play) {
-        alert("プレイID " + play.id() + " のデータを保存！");
-        // データベースが繋がったら実装
-    };
-}
+            <h3>ボード選択</h3>
 
-ko.applyBindings(new ViewModel());
-</script>
+            <!-- フロップ1 -->
+            <label>フロップ1:
+                <select data-bind="value: newPlay().flop1_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().flop1_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <!-- フロップ2 -->
+            <label>フロップ2:
+                <select data-bind="value: newPlay().flop2_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().flop2_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <!-- フロップ3 -->
+            <label>フロップ3:
+                <select data-bind="value: newPlay().flop3_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().flop3_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <!-- ターン -->
+            <label>ターン:
+                <select data-bind="value: newPlay().turn_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().turn_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <!-- リバー -->
+            <label>リバー:
+                <select data-bind="value: newPlay().river_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: newPlay().river_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
 
+            <button type="button" onclick="closeCreateModal()">閉じる</button>
+            <button type="submit">作成</button>
+        </form>
+    </div>
+
+    <!-- 編集モーダル -->
+    <div id="editModal" style="display:none;">
+        <h2>プレイ編集</h2>
+        <form data-bind="submit: updatePlay">
+            <label>ポジション:
+                <select data-bind="value: selectedPlay().position">
+                    <option value="UTG">UTG</option>
+                    <option value="MP">MP</option>
+                    <option value="CO">CO</option>
+                    <option value="BTN">BTN</option>
+                    <option value="SB">SB</option>
+                    <option value="BB">BB</option>
+                </select>
+            </label>
+            <br>
+            <label>SB: <input type="number" data-bind="value: selectedPlay().sb" /></label>
+            <label>BB: <input type="number" data-bind="value: selectedPlay().bb" /></label>
+            <label>アンティ: <input type="number" data-bind="value: selectedPlay().ante" /></label>
+            <label>メモ: <input type="text" data-bind="value: selectedPlay().memo" /></label>
+            <br><br>
+
+            <h3>ハンド選択</h3>
+            <!-- ハンド1 -->
+            <label>1枚目:
+                <select data-bind="value: selectedPlay().hand1_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().hand1_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <!-- ハンド2 -->
+            <label>2枚目:
+                <select data-bind="value: selectedPlay().hand2_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().hand2_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>            
+
+            <h3>ボード選択</h3>
+            <label>フロップ1:
+                <select data-bind="value: selectedPlay().flop1_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().flop1_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <label>フロップ2:
+                <select data-bind="value: selectedPlay().flop2_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().flop2_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <label>フロップ3:
+                <select data-bind="value: selectedPlay().flop3_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().flop3_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <label>ターン:
+                <select data-bind="value: selectedPlay().turn_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().turn_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+            <label>リバー:
+                <select data-bind="value: selectedPlay().river_rank">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="J">J</option>
+                    <option value="Q">Q</option>
+                    <option value="K">K</option>
+                    <option value="A">A</option>
+                </select>
+                <select data-bind="value: selectedPlay().river_suit">
+                    <option value="spade">♠</option>
+                    <option value="heart">♥</option>
+                    <option value="diamond">♦</option>
+                    <option value="club">♣</option>
+                </select>
+            </label>
+            <br>
+
+            <button type="button" onclick="closeEditModal()">閉じる</button>
+            <button type="submit">更新</button>
+        </form>
+    </div>
 </body>
 </html>

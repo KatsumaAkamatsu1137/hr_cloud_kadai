@@ -60,6 +60,8 @@ return array(
         'http_only'   => true, // JavaScript からのアクセス禁止
     ),
 
+
+
     // バリデーションの設定
     'validation' => array(
         'global_input_fallback' => true, // 入力値のグローバルフェイルバック

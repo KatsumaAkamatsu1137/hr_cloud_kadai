@@ -10,8 +10,6 @@ services:
       - "8080:80"
     volumes:
       - ../:/var/www/html/my_fuel_project
-    environment:
-      - FUEL_ENV=development      
     networks:
       - fuelphp-network
 
@@ -21,7 +19,7 @@ services:
       dockerfile: docker/db/Dockerfile
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: pocker_app
+      MYSQL_DATABASE: poker_app
     ports:
       - "3307:3306"
     networks:
