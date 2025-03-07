@@ -29,7 +29,7 @@ return array(
 
 	/**
 	 * Base PDO config
-	 */
+	 
 	'default' => array(
 		'type'        => 'pdo',
 		'connection'  => array(
@@ -50,9 +50,9 @@ return array(
 		'readonly'     => false,
 	),
 
-	/**
-	 * Base MySQLi config
-	 *
+	*/
+	
+	 
 
 	'default' => array(
 		'type'        => 'mysqli',
@@ -73,8 +73,9 @@ return array(
 		'profiling'    => false,
 		'readonly'     => false,
 	),
-	 */
+	
 
+	
 	/**
 	 * Base Redis config
 	 */
@@ -86,5 +87,6 @@ return array(
 			'database'  => 0,
 		),
 	),
+
 
 );
