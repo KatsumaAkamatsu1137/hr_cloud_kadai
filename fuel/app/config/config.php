@@ -12,9 +12,6 @@
 
 return array(
 
-    // 環境設定 ('development', 'staging', 'production' など)
-    'environment' => 'development',  // 本番環境では 'production' に変更
-
     // アプリケーションのベースURL (null にすると自動検出)
     'base_url'  => null,
 
