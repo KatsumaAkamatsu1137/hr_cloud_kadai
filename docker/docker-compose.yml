@@ -10,6 +10,8 @@ services:
       - "8080:80"
     volumes:
       - ../:/var/www/html/my_fuel_project
+    environment:
+      - FUEL_ENV=development      
     networks:
       - fuelphp-network
 
