@@ -1,7 +1,9 @@
 <?php
 return array(
-	'_root_'  => 'welcome/index',  // The default route
-	'_404_'   => 'welcome/404',    // The main 404 route
-	
-	'hello(/:name)?' => array('welcome/hello', 'name' => 'hello'),
+    '_root_'  => 'plays/index',  // デフォルトページ
+    'plays/index' => 'plays/index',
+    'plays/create' => 'plays/create',
+    'plays/view/(:num)' => 'plays/view/$1',
+    'plays/edit/(:num)' => 'plays/edit/$1',
+    'plays/delete/(:num)' => 'plays/delete/$1',
 );

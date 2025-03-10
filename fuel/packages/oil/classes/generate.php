@@ -1787,7 +1787,7 @@ CLASS;
 			throw new Exception("Unable to read existing migrations. Path does not exist, or you may have an 'open_basedir' defined");
 		}
 
-		return str_pad($last + 1, 3, '0', STR_PAD_LEFT);
+		return str_pad((int)$last + 1, 3, '0', STR_PAD_LEFT);
 	}
 
 	private static function _update_current_version($version)

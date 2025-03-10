@@ -7,7 +7,7 @@ services:
       dockerfile: docker/Dockerfile
     container_name: fuelphp-app
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ../:/var/www/html/my_fuel_project
     networks:
@@ -19,9 +19,9 @@ services:
       dockerfile: docker/db/Dockerfile
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: fuelphp
+      MYSQL_DATABASE: poker_app
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - fuelphp-network
 

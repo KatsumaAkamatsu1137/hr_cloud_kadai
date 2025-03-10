@@ -8,7 +8,7 @@ return array(
 		'type'        => 'mysqli',
 		'connection'  => array(
 			'hostname'   => 'db',
-			'database'   => 'fuelphp',
+			'database'   => 'poker_app',
 			'username'   => 'root',
 			'password'   => 'root',
 			'persistent' => false,

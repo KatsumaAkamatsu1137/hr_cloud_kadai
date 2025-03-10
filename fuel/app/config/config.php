@@ -92,8 +92,8 @@ return array(
 	 * server_gmt_offset	in seconds the server offset from gmt timestamp when time() is used
 	 * default_timezone		optional, if you want to change the server's default timezone
 	 */
-	// 'server_gmt_offset'  => 0,
-	// 'default_timezone'   => null,
+	'server_gmt_offset'  => 0,
+	'default_timezone'   => 'Asia/Tokyo',
 
 	/**
 	 * Logging Threshold.  Can be set to any of the following:
@@ -188,18 +188,22 @@ return array(
 	/**
 	 * Cookie settings
 	 */
-	// 'cookie' => array(
-		// Number of seconds before the cookie expires
-		// 'expiration'  => 0,
-		// Restrict the path that the cookie is available to
-		// 'path'        => '/',
-		// Restrict the domain that the cookie is available to
-		// 'domain'      => null,
-		// Only transmit cookies over secure connections
-		// 'secure'      => false,
-		// Only transmit cookies over HTTP, disabling Javascript access
-		// 'http_only'   => false,
-	// ),
+	'cookie' => array(
+        'expiration' => 86400, // 1日
+        'path' => '/',
+        'domain' => null,
+        'secure' => false,
+        'http_only' => false,
+    ),
+
+	// セッション設定
+    'session' => array(
+        'driver' => 'cookie',
+        'cookie_name' => 'fuel_session',
+        'expire_on_close' => false,
+        'expiration_time' => 7200, // 2時間
+        'rotation_time' => 300, // 5分ごとに更新
+    ),
 
 	/**
 	 * Validation settings
@@ -259,7 +263,7 @@ return array(
 	/**************************************************************************/
 	/* Always Load                                                            */
 	/**************************************************************************/
-	// 'always_load'  => array(
+	'always_load'  => array(
 
 		/**
 		 * These packages are loaded on Fuel's startup.
@@ -272,9 +276,9 @@ return array(
 		 *     array('auth'	=> PKGPATH.'auth/')
 		 * );
 		 */
-		// 'packages'  => array(
-		// 	//'orm',
-		// ),
+		'packages'  => array(
+		 	'orm',
+		),
 
 		/**
 		 * These modules are always loaded on Fuel's startup. You can specify them
@@ -310,6 +314,6 @@ return array(
 		 * If you don't want the lang in a group use null as groupname.
 		 */
 		// 'language'  => array(),
-	// ),
+	),
 
 );
