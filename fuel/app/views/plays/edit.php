@@ -7,6 +7,7 @@ $suit_options = array(
     'club' => '♣'
 );
 ?>
+<head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js"></script>
     <script>
         function PlayViewModel(play) {
